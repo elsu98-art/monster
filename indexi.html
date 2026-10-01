@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D 單字怪獸 - 拯救可愛公主</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Poppins:wght@600;800&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+            background-color: #87ceeb;
+            touch-action: none; /* 防止手機滑動縮放 */
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 40px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        /* 分數與Combo */
+        .score-board {
+            text-align: right;
+            color: #fff;
+            text-shadow: 3px 3px 0px #1e40af, -1px -1px 0px #1e40af, 1px -1px 0px #1e40af, -1px 1px 0px #1e40af;
+        }
+
+        .score-text {
+            font-size: 36px;
+            font-family: 'Poppins', sans-serif;
+            color: #fbbf24;
+        }
+
+        .bottom-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 5vh;
+        }
+
+        #word-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 50px;
+            border-radius: 25px;
+            border: 4px solid #cbd5e1;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        #target-word {
+            font-size: 64px;
+            letter-spacing: 8px;
+            font-family: 'Poppins', sans-serif;
+            color: #94a3b8;
+            font-weight: 800;
+        }
+
+        .typed-char {
+            color: #2563eb;
+            text-shadow: 2px 2px 0px #bfdbfe;
+        }
+        
+        /* 錯誤震動效果 */
+        .error-shake {
+            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(6px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        .floating-text {
+            position: absolute;
+            color: #ef4444;
+            font-weight: 900;
+            font-size: 40px;
+            pointer-events: none;
+            text-shadow: 3px 3px 0 #fff, -1px -1px 0 #fff;
+            z-index: 20;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        #zh-translation {
+            color: #475569;
+            font-weight: 900;
+            font-size: 28px;
+            margin-top: 10px;
+            background: #f1f5f9;
+            padding: 5px 25px;
+            border-radius: 15px;
+            border: 3px solid #cbd5e1;
+            display: inline-block;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-120px) scale(1.5); }
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(135, 206, 235, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            pointer-events: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .overlay-card {
+            background: #ffffff;
+            padding: 40px 60px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            border: 4px solid #bae6fd;
+            max-width: 650px;
+            width: 90%;
+        }
+
+        .overlay h1 {
+            font-size: 54px;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 2px 2px 0px #bfdbfe;
+        }
+
+        .overlay p {
+            font-size: 22px;
+            color: #334155;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 15px 50px;
+            font-size: 28px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            background: #facc15;
+            color: #172554;
+            border: 4px solid #ca8a04;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #a16207, 0 15px 20px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+
+        button:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #a16207, 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        #instruction {
+            margin-top: 15px;
+            color: #1e3a8a;
+            font-size: 18px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.7);
+            padding: 5px 15px;
+            border-radius: 10px;
+        }
+
+        #virtual-keyboard {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            margin: 10px auto 0 auto;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: auto;
+        }
+        
+        @media (hover: none) and (pointer: coarse), (max-width: 768px) {
+            #virtual-keyboard {
+                display: flex;
+            }
+            #instruction {
+                display: none;
+            }
+            .bottom-bar {
+                margin-bottom: 2vh;
+            }
+            #word-container {
+                padding: 10px 30px;
+            }
+            #target-word {
+                font-size: 48px;
+            }
+            .overlay h1 { font-size: 40px; }
+            .overlay-card { padding: 20px 30px; }
+            .diff-btn { font-size: 18px !important; padding: 10px 20px !important; }
+        }
+
+        .vk-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .vk-key {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            color: #1e3a8a;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 12px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #94a3b8;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+        }
+        .vk-key:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #94a3b8;
+        }
+        .vk-key.ultimate-key {
+            background: #facc15;
+            border-color: #ca8a04;
+            box-shadow: 0 4px 0 #a16207;
+            color: #172554;
+            font-size: 18px;
+            margin-top: 5px;
+            padding: 15px 0;
+        }
+        .vk-key.ultimate-key:active {
+            box-shadow: 0 0 0 #a16207;
+        }
+
+        .diff-btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .diff-btn {
+            padding: 12px 30px;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="game-canvas"></canvas>
+
+<div id="ui-layer" class="hidden">
+    <div class="top-bar flex justify-between w-full">
+        <!-- 左側：大絕招集氣環 -->
+        <div id="ultimate-container" class="flex items-center bg-white/90 p-2 rounded-full border-4 border-slate-300 shadow-lg" style="pointer-events: auto;">
+            <svg class="w-16 h-16 transform -rotate-90">
+                <circle cx="32" cy="32" r="26" stroke="#e2e8f0" stroke-width="8" fill="none" />
+                <circle id="ultimate-ring" cx="32" cy="32" r="26" stroke="#f59e0b" stroke-width="8" fill="none" stroke-dasharray="164" stroke-dashoffset="164" class="transition-all duration-300 ease-in-out" stroke-linecap="round" />
+            </svg>
+            <div class="ml-3 mr-5 font-black text-slate-700">
+                <div class="text-sm text-slate-500">大絕集氣</div>
+                <div id="ultimate-text" class="text-amber-500 text-xl tracking-wider">0/3</div>
+                <div id="ultimate-hint" class="text-red-600 text-sm hidden mt-[-4px] tracking-wider">按空白鍵!</div>
+            </div>
+        </div>
+
+        <!-- 右側：分數 -->
+        <div class="score-board text-right bg-white/80 px-6 py-2 rounded-full border-4 border-slate-300 shadow-lg h-fit">
+            <div class="score-text" style="text-shadow: none; font-size:28px;">Score: <span id="score">0</span></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div id="word-container">
+            <div id="target-word">APPLE</div>
+            <div id="zh-translation">蘋果</div>
+        </div>
+        <div id="instruction">使用鍵盤輸入單字發射魔法！集滿 3 次按【空白鍵】發動大絕！</div>
+        
+        <div id="virtual-keyboard">
+            <div class="vk-row">
+                <div class="vk-key" data-key="Q">Q</div><div class="vk-key" data-key="W">W</div><div class="vk-key" data-key="E">E</div><div class="vk-key" data-key="R">R</div><div class="vk-key" data-key="T">T</div><div class="vk-key" data-key="Y">Y</div><div class="vk-key" data-key="U">U</div><div class="vk-key" data-key="I">I</div><div class="vk-key" data-key="O">O</div><div class="vk-key" data-key="P">P</div>
+            </div>
+            <div class="vk-row">
+                <div style="flex:0.5;"></div>
+                <div class="vk-key" data-key="A">A</div><div class="vk-key" data-key="S">S</div><div class="vk-key" data-key="D">D</div><div class="vk-key" data-key="F">F</div><div class="vk-key" data-key="G">G</div><div class="vk-key" data-key="H">H</div><div class="vk-key" data-key="J">J</div><div class="vk-key" data-key="K">K</div><div class="vk-key" data-key="L">L</div>
+                <div style="flex:0.5;"></div>
+            </div>
+            <div class="vk-row">
+                <div style="flex:1;"></div>
+                <div class="vk-key" data-key="Z">Z</div><div class="vk-key" data-key="X">X</div><div class="vk-key" data-key="C">C</div><div class="vk-key" data-key="V">V</div><div class="vk-key" data-key="B">B</div><div class="vk-key" data-key="N">N</div><div class="vk-key" data-key="M">M</div>
+                <div style="flex:1;"></div>
+            </div>
+            <div class="vk-row">
+                <div class="vk-key ultimate-key" data-key="SPACE">⚡ 發動大絕招 ⚡</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="start-screen" class="overlay">
+    <div class="overlay-card">
+        <h1>3D 單字怪獸</h1>
+        <p>遠方出現了<span style="color:#ef4444;">無盡的怪獸軍團</span>！<br>請輸入正確的英文單字，<br>發射魔法球將牠們擊退！<br><br><span style="color:#d97706; font-size: 18px;">(集滿 3 次能量，按【空白鍵】發動清場大絕！)</span></p>
+        
+        <h3 style="color:#1e3a8a; margin-bottom:10px; font-weight:bold;">請選擇難度：</h3>
+        <div class="diff-btn-container">
+            <button class="diff-btn" data-diff="easy" style="background:#86efac; border-color:#22c55e; box-shadow: 0 8px 0 #16a34a;">簡易</button>
+            <button class="diff-btn" data-diff="normal" style="background:#fcd34d; border-color:#f59e0b; box-shadow: 0 8px 0 #d97706;">普通</button>
+            <button class="diff-btn" data-diff="hard" style="background:#fca5a5; border-color:#ef4444; box-shadow: 0 8px 0 #dc2626; color:white;">困難</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-over-screen" class="overlay hidden">
+    <div class="overlay-card" style="border-color: #fca5a5;">
+        <h1 style="color: #dc2626;">防線失守了...</h1>
+        <p>怪獸靠近了公主，快重新集結魔法！<br>最終分數: <span id="final-score-lose" style="font-size:36px; color:#b91c1c;">0</span></p>
+        <button id="restart-btn-lose" style="background:#ef4444; color:white; border-color:#b91c1c; box-shadow: 0 8px 0 #7f1d1d;">再挑戰一次</button>
+    </div>
+</div>
+
+<script>
+    const words3 = [
+        {en: "CAT", zh: "貓咪"}, {en: "DOG", zh: "狗狗"}, {en: "PIG", zh: "豬"}, 
+        {en: "COW", zh: "牛"}, {en: "FOX", zh: "狐狸"}, {en: "BAT", zh: "蝙蝠"}, 
+        {en: "BEE", zh: "蜜蜂"}, {en: "BUG", zh: "蟲子"}, {en: "ANT", zh: "螞蟻"},
+        {en: "SUN", zh: "太陽"}, {en: "ICE", zh: "冰塊"}, {en: "EGG", zh: "蛋"}, 
+        {en: "CUP", zh: "杯子"}, {en: "BOX", zh: "箱子"}, {en: "HAT", zh: "帽子"}, 
+        {en: "CAP", zh: "鴨舌帽"}, {en: "MAP", zh: "地圖"}, {en: "POT", zh: "鍋子"}, 
+        {en: "NUT", zh: "堅果"}, {en: "PIE", zh: "派"}, {en: "TOY", zh: "玩具"}, 
+        {en: "BOY", zh: "男孩"}, {en: "RED", zh: "紅色"}, {en: "DAY", zh: "白天"},
+        {en: "CAR", zh: "汽車"}, {en: "BUS", zh: "公車"}, {en: "PEN", zh: "筆"},
+        {en: "EYE", zh: "眼睛"}, {en: "EAR", zh: "耳朵"}, {en: "LEG", zh: "腿"}
+    ];
+
+    const words4 = [
+        {en: "BIRD", zh: "小鳥"}, {en: "FISH", zh: "魚"}, {en: "BEAR", zh: "熊"}, 
+        {en: "LION", zh: "獅子"}, {en: "WOLF", zh: "狼"}, {en: "FROG", zh: "青蛙"},
+        {en: "BLUE", zh: "藍色"}, {en: "PINK", zh: "粉紅色"}, {en: "STAR", zh: "星星"}, 
+        {en: "MOON", zh: "月亮"}, {en: "RAIN", zh: "雨"}, {en: "SNOW", zh: "雪"}, 
+        {en: "TREE", zh: "樹木"}, {en: "BOOK", zh: "書本"}, {en: "DESK", zh: "書桌"}, 
+        {en: "DOOR", zh: "門"}, {en: "HOME", zh: "家"}, {en: "JUMP", zh: "跳躍"}, 
+        {en: "WALK", zh: "走路"}, {en: "SWIM", zh: "游泳"}, {en: "PLAY", zh: "玩耍"}
+    ];
+
+    const words5 = [
+        {en: "APPLE", zh: "蘋果"}, {en: "GRAPE", zh: "葡萄"}, {en: "TIGER", zh: "老虎"},
+        {en: "WATER", zh: "水"}, {en: "SMILE", zh: "微笑"}, {en: "MAGIC", zh: "魔法"},
+        {en: "HAPPY", zh: "快樂"}, {en: "BREAD", zh: "麵包"}, {en: "CHAIR", zh: "椅子"}
+    ];
+
+    let currentDifficulty = 'normal';
+    let currentWordObj = null;
+    let currentWord = "";
+    let typedWord = "";
+    
+    let score = 0;
+    let combo = 0;
+    let ultimateCharge = 0;
+    let isPlaying = false;
+    
+    const START_Z = -280; 
+    const END_Z = -15;    
+    let monsterBaseSpeed = 3.5; // 調慢怪獸基礎速度
+
+    // DOM 元素
+    const uiLayer = document.getElementById('ui-layer');
+    const targetWordEl = document.getElementById('target-word');
+    const scoreEl = document.getElementById('score');
+    const wordContainer = document.getElementById('word-container');
+    const startScreen = document.getElementById('start-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const finalScoreLoseEl = document.getElementById('final-score-lose');
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let bgmInterval = null;
+    let bgmNoteIndex = 0;
+    // 簡單溫馨的瑪莉歐風小調
+    const bgmNotes = [392, 329.63, 261.63, 329.63, 392, 392, 440, 392, 329.63, 261.63, 293.66, 329.63, 261.63]; 
+
+    function startBGM() {
+        if (bgmInterval) clearInterval(bgmInterval);
+        bgmNoteIndex = 0;
+        bgmInterval = setInterval(() => {
+            if(!isPlaying || audioCtx.state !== 'running') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine'; // 像鐵琴的柔和聲音
+            osc.frequency.setValueAtTime(bgmNotes[bgmNoteIndex % bgmNotes.length], now);
+            
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.03, now + 0.05); // 音量非常小，當背景音樂
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            
+            osc.start(now);
+            osc.stop(now + 0.5);
+            bgmNoteIndex++;
+        }, 500);
+    }
+
+    function stopBGM() {
+        if(bgmInterval) clearInterval(bgmInterval);
+    }
+
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'type') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'ultimate') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(30, now + 1.5);
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+            osc.start(now);
+            osc.stop(now + 1.5);
+        } else if (type === 'error') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+        } else if (type === 'hit') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'shoot' || type === 'shoot-combo') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(type === 'shoot-combo' ? 800 : 600, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        }
+    }
+
+    const canvas = document.getElementById('game-canvas');
+    const scene = new THREE.Scene();
+    
+    const SKY_COLOR = 0x87CEEB;
+    scene.background = new THREE.Color(SKY_COLOR);
+    scene.fog = new THREE.FogExp2(SKY_COLOR, 0.004);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 18, 40);
+    camera.lookAt(0, 5, -50);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfffae6, 1.2);
+    sunLight.position.set(50, 150, 50);
+    sunLight.castShadow = true;
+    sunLight.shadow.camera.top = 100;
+    sunLight.shadow.camera.bottom = -100;
+    sunLight.shadow.camera.left = -100;
+    sunLight.shadow.camera.right = 100;
+    sunLight.shadow.camera.far = 500;
+    scene.add(sunLight);
+
+    const groundGeo = new THREE.PlaneGeometry(2000, 2000);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x7cfc00, roughness: 0.9, metalness: 0.1 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const pathGeo = new THREE.PlaneGeometry(30, 1000);
+    const pathMat = new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 1 });
+    const path = new THREE.Mesh(pathGeo, pathMat);
+    path.rotation.x = -Math.PI / 2;
+    path.position.y = 0.1;
+    path.receiveShadow = true;
+    scene.add(path);
+
+    const envObjects = [];
+
+    const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
+    for(let i=0; i<15; i++) {
+        const cloudGroup = new THREE.Group();
+        const puffs = Math.floor(Math.random() * 3) + 3;
+        for(let j=0; j<puffs; j++) {
+            const puff = new THREE.Mesh(new THREE.SphereGeometry(Math.random()*4+4, 16, 16), cloudMat);
+            puff.position.set((Math.random()-0.5)*10, (Math.random()-0.5)*4, (Math.random()-0.5)*10);
+            cloudGroup.add(puff);
+        }
+        cloudGroup.position.set((Math.random()-0.5)*200, Math.random()*30 + 40, -Math.random()*400);
+        scene.add(cloudGroup);
+        envObjects.push({ mesh: cloudGroup, type: 'cloud', speed: Math.random()*2+1 });
+    }
+
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22, flatShading: true });
+    
+    for(let z = -20; z >= -400; z -= 30) {
+        [-1, 1].forEach(side => {
+            if(Math.random() > 0.8) return;
+            const tree = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2, 8), trunkMat);
+            trunk.position.y = 4;
+            trunk.castShadow = true;
+            
+            const leaves = new THREE.Mesh(new THREE.ConeGeometry(6, 15, 8), leavesMat);
+            leaves.position.y = 12;
+            leaves.castShadow = true;
+            
+            tree.add(trunk, leaves);
+            tree.position.set(side * (Math.random()*10 + 25), 0, z + (Math.random()-0.5)*10);
+            scene.add(tree);
+        });
+    }
+
+    const princessGroup = new THREE.Group();
+    princessGroup.position.set(0, 0, 0);
+
+    const dress = new THREE.Mesh(new THREE.ConeGeometry(3, 5, 32), new THREE.MeshStandardMaterial({ color: 0xff69b4, roughness: 0.6 }));
+    dress.position.y = 2.5; dress.castShadow = true;
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(3.5, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffe0bd, roughness: 0.3 }));
+    head.position.y = 7.5; head.castShadow = true;
+
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), eyeMat); lEye.position.set(-1.2, 7.8, 3.2);
+    const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), eyeMat); rEye.position.set(1.2, 7.8, 3.2);
+
+    const blushMat = new THREE.MeshBasicMaterial({ color: 0xff99aa });
+    const blushGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 16);
+    const lBlush = new THREE.Mesh(blushGeo, blushMat); lBlush.rotation.x = Math.PI/2; lBlush.position.set(-1.8, 6.8, 3.1);
+    const rBlush = new THREE.Mesh(blushGeo, blushMat); rBlush.rotation.x = Math.PI/2; rBlush.position.set(1.8, 6.8, 3.1);
+
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(3.7, 32, 32, 0, Math.PI*2, 0, Math.PI/2 + 0.5), new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.8 }));
+    hair.position.y = 7.5; hair.rotation.x = -Math.PI/2;
+
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1, 1.2, 16), new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 }));
+    crown.position.y = 11.2; crown.castShadow = true;
+
+    princessGroup.add(dress, head, lEye, rEye, lBlush, rBlush, hair, crown);
+    scene.add(princessGroup);
+
+    const activeMonsters = [];
+    let spawnTimer = 1.0;
+    let baseSpawnInterval = 4.5; // 調慢生成頻率
+
+    function spawnMonster() {
+        const group = new THREE.Group();
+        group.position.set(0, 0, START_Z);
+
+        const isBig = Math.random() > 0.8; 
+        const originalColor = isBig ? 0x9333ea : 0xff4500;
+        const hp = isBig ? 30 : 10;
+        // 怪獸速度更慢
+        const speed = isBig ? (monsterBaseSpeed * 0.8) : (monsterBaseSpeed + Math.random()*2 + (score/2000));
+
+        const bodyMat = new THREE.MeshStandardMaterial({ color: originalColor, roughness: 0.7 });
+        const mBody = new THREE.Mesh(new THREE.BoxGeometry(14, 16, 12), bodyMat);
+        mBody.position.y = 8; mBody.castShadow = true;
+        
+        const belly = new THREE.Mesh(new THREE.CylinderGeometry(4, 5, 8, 16), new THREE.MeshStandardMaterial({ color: 0xffd700 }));
+        belly.rotation.z = Math.PI/2; belly.rotation.y = Math.PI/2; belly.position.set(0, 6, 5.5);
+
+        const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const blackMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const bigEyeGeo = new THREE.SphereGeometry(2.5, 32, 32);
+        const pupilGeo = new THREE.SphereGeometry(1, 16, 16);
+
+        const lEye = new THREE.Mesh(bigEyeGeo, whiteMat); lEye.position.set(-3.5, 13, 6);
+        const lPupil = new THREE.Mesh(pupilGeo, blackMat); lPupil.position.set(-3.5, 13, 8.1);
+        const rEye = new THREE.Mesh(bigEyeGeo, whiteMat); rEye.position.set(3.5, 13, 6);
+        const rPupil = new THREE.Mesh(pupilGeo, blackMat); rPupil.position.set(3.5, 13, 8.1);
+        
+        const mouth = new THREE.Mesh(new THREE.PlaneGeometry(10, 4), blackMat); mouth.position.set(0, 8, 6.1);
+        
+        const hornMat = new THREE.MeshStandardMaterial({ color: 0x8b0000 });
+        const lHorn = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 8), hornMat); lHorn.position.set(-4, 17, 3); lHorn.rotation.z = Math.PI/8;
+        const rHorn = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 8), hornMat); rHorn.position.set(4, 17, 3); rHorn.rotation.z = -Math.PI/8;
+
+        group.add(mBody, belly, lEye, lPupil, rEye, rPupil, mouth, lHorn, rHorn);
+        if (isBig) group.scale.set(1.4, 1.4, 1.4);
+
+        scene.add(group);
+        activeMonsters.push({ group: group, bodyMat: bodyMat, originalColor: originalColor, isBig: isBig, hp: hp, speed: speed, z: START_Z });
+    }
+
+    const projectiles = [];
+    const particles = [];
+
+    function shootProjectile(isCombo) {
+        const projectile = new THREE.Mesh(
+            new THREE.SphereGeometry(isCombo ? 3 : 1.5, 16, 16),
+            new THREE.MeshBasicMaterial({ color: isCombo ? 0xffff00 : 0x00e5ff })
+        );
+        projectile.add(new THREE.PointLight(isCombo ? 0xffff00 : 0x00e5ff, 2, 30));
+        projectile.position.copy(princessGroup.position);
+        projectile.position.y += 12;
+        
+        scene.add(projectile);
+        projectiles.push({ mesh: projectile, isCombo: isCombo, speed: isCombo ? 200 : 120 });
+        playSound(isCombo ? 'shoot-combo' : 'shoot');
+    }
+
+    function createExplosion(position, color, count) {
+        for(let i=0; i<count; i++) {
+            const p = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: color }));
+            p.position.copy(position);
+            scene.add(p);
+            particles.push({
+                mesh: p,
+                velocity: new THREE.Vector3((Math.random()-0.5)*50, Math.random()*50+10, (Math.random()-0.5)*50),
+                life: 1.0 
+            });
+        }
+    }
+
+    function castUltimate() {
+        playSound('ultimate');
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fff; z-index:9999; pointer-events:none; transition:opacity 0.8s ease-out;';
+        document.body.appendChild(flash);
+        
+        let shakeCount = 0; const originalPos = camera.position.clone();
+        const shakeInterval = setInterval(() => {
+            camera.position.set(originalPos.x + (Math.random()-0.5)*10, originalPos.y + (Math.random()-0.5)*10, originalPos.z);
+            if(++shakeCount > 20) { clearInterval(shakeInterval); camera.position.copy(originalPos); }
+        }, 40);
+
+        setTimeout(() => flash.style.opacity = '0', 100);
+        setTimeout(() => flash.remove(), 900);
+
+        for (let i = activeMonsters.length - 1; i >= 0; i--) {
+            const m = activeMonsters[i];
+            createExplosion(m.group.position, m.originalColor, 60); 
+            scene.remove(m.group);
+            score += 500; 
+            showFloatingDamage('大絕秒殺!', m.group.position);
+        }
+        activeMonsters.length = 0; 
+        scoreEl.innerText = score;
+    }
+
+    function getNextWord() {
+        let pool;
+        const rand = Math.random();
+        // 依據選擇的難度，大幅調整短單字出現比例
+        if (currentDifficulty === 'easy') {
+            pool = (rand < 0.85) ? words3 : words4; // 85%是3個字
+        } else if (currentDifficulty === 'normal') {
+            if (rand < 0.50) pool = words3;
+            else if (rand < 0.90) pool = words4;
+            else pool = words5;
+        } else {
+            if (rand < 0.20) pool = words3;
+            else if (rand < 0.70) pool = words4;
+            else pool = words5;
+        }
+
+        currentWordObj = pool[Math.floor(Math.random() * pool.length)];
+        currentWord = currentWordObj.en;
+        typedWord = "";
+        document.getElementById('zh-translation').innerText = currentWordObj.zh;
+        updateWordDisplay();
+    }
+
+    function updateWordDisplay() {
+        let html = "";
+        for (let i = 0; i < currentWord.length; i++) {
+            html += (i < typedWord.length) ? `<span class="typed-char">${currentWord[i]}</span>` : `<span>${currentWord[i]}</span>`;
+        }
+        targetWordEl.innerHTML = html;
+    }
+
+    function updateUltimateUI() {
+        const ring = document.getElementById('ultimate-ring');
+        const text = document.getElementById('ultimate-text');
+        const hint = document.getElementById('ultimate-hint');
+        
+        let charge = Math.min(ultimateCharge, 3); // 3次即滿
+        ring.style.strokeDashoffset = 164 - (charge / 3) * 164;
+        text.innerText = charge === 3 ? "MAX!" : `${charge}/3`;
+        
+        if (charge === 3) {
+            ring.style.stroke = "#ef4444";
+            text.classList.replace('text-amber-500', 'text-red-500');
+            text.classList.add('animate-pulse');
+            hint.classList.remove('hidden');
+            hint.classList.add('animate-pulse');
+        } else {
+            ring.style.stroke = "#f59e0b";
+            text.classList.replace('text-red-500', 'text-amber-500');
+            text.classList.remove('animate-pulse');
+            hint.classList.add('hidden');
+            hint.classList.remove('animate-pulse');
+        }
+    }
+
+    function showFloatingDamage(text, pos3D) {
+        const floatEl = document.createElement('div');
+        floatEl.innerText = text;
+        floatEl.className = 'floating-text';
+        
+        const vec = pos3D.clone(); vec.y += 20; vec.project(camera);
+        floatEl.style.left = `${(vec.x * .5 + .5) * window.innerWidth}px`;
+        floatEl.style.top = `${(vec.y * -.5 + .5) * window.innerHeight}px`;
+        
+        document.body.appendChild(floatEl);
+        setTimeout(() => floatEl.remove(), 1000);
+    }
+
+    function handleInput(key) {
+        if (!isPlaying) return;
+        
+        if (key === 'SPACE') {
+            if (ultimateCharge >= 3) {
+                castUltimate();
+                ultimateCharge = 0;
+                setTimeout(updateUltimateUI, 800);
+            }
+            return;
+        }
+        
+        if (/^[A-Z]$/.test(key)) {
+            if (key === currentWord[typedWord.length]) {
+                typedWord += key;
+                playSound('type');
+                princessGroup.position.y = 1; setTimeout(() => princessGroup.position.y = 0, 100);
+
+                if (typedWord === currentWord) {
+                    combo++;
+                    if (ultimateCharge < 3) ultimateCharge++; // 累積大絕
+                    updateUltimateUI();
+                    
+                    score += 100 + (combo * 50);
+                    scoreEl.innerText = score;
+                    shootProjectile(combo >= 3);
+                    getNextWord();
+                } else {
+                    updateWordDisplay();
+                }
+            } else {
+                playSound('error');
+                combo = 0; // 只斷連擊加分，不扣大絕招集氣！
+                
+                wordContainer.classList.remove('error-shake');
+                void wordContainer.offsetWidth; 
+                wordContainer.classList.add('error-shake');
+            }
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') e.preventDefault();
+        handleInput(e.code === 'Space' ? 'SPACE' : e.key.toUpperCase());
+    });
+
+    // 虛擬鍵盤支援觸控
+    document.querySelectorAll('.vk-key').forEach(btn => {
+        btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); 
+            handleInput(btn.dataset.key);
+        });
+    });
+
+    let lastTime = 0;
+    function animate(currentTime) {
+        requestAnimationFrame(animate);
+        const delta = (currentTime - lastTime) / 1000; 
+        lastTime = currentTime;
+        if (!delta || delta > 0.1) return; 
+
+        envObjects.forEach(obj => {
+            if(obj.type === 'cloud') {
+                obj.mesh.position.x += obj.speed * delta;
+                if(obj.mesh.position.x > 300) obj.mesh.position.x = -300;
+            }
+        });
+
+        if (isPlaying) {
+            spawnTimer -= delta;
+            if (spawnTimer <= 0) {
+                spawnMonster();
+                baseSpawnInterval = Math.max(1.5, 4.5 - (score / 1500));
+                spawnTimer = baseSpawnInterval + (Math.random() * 1.0 - 0.5); 
+            }
+
+            for (let i = activeMonsters.length - 1; i >= 0; i--) {
+                const m = activeMonsters[i];
+                m.z += m.speed * delta;
+                m.group.position.z = m.z;
+                m.group.position.y = Math.sin(currentTime * 0.008 + m.z) * 1.5;
+                m.group.children[0].rotation.z = Math.sin(currentTime * 0.008 + m.z) * 0.08; 
+
+                if (m.z >= END_Z) loseGame();
+            }
+
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const proj = projectiles[i];
+                proj.mesh.position.z -= proj.speed * delta; 
+
+                let target = activeMonsters.reduce((closest, curr) => (closest === null || curr.z > closest.z) ? curr : closest, null);
+                if (target && proj.mesh.position.z <= target.z + (target.isBig ? 15 : 10)) { 
+                    scene.remove(proj.mesh); projectiles.splice(i, 1);
+                    
+                    playSound('hit');
+                    let dmg = 10 + (proj.isCombo ? combo * 5 : 0);
+                    target.hp -= dmg;
+                    showFloatingDamage(`-${dmg}`, target.group.position);
+                    target.z -= (proj.isCombo ? 25 : 10); // 擊退效果
+                    
+                    target.bodyMat.color.setHex(0xffffff);
+                    setTimeout(() => { if (target.group) target.bodyMat.color.setHex(target.originalColor); }, 120);
+                    createExplosion(target.group.position.clone().add(new THREE.Vector3(0,10,5)), 0xffa500, 12);
+
+                    if (target.hp <= 0) {
+                        createExplosion(target.group.position, target.originalColor, 40);
+                        scene.remove(target.group); activeMonsters.splice(activeMonsters.indexOf(target), 1);
+                    }
+                }
+            }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i]; p.life -= delta;
+            if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); } 
+            else {
+                p.mesh.position.addScaledVector(p.velocity, delta);
+                p.velocity.y -= 100 * delta; 
+                if(p.mesh.position.y < 0) { p.mesh.position.y = 0; p.velocity.y *= -0.5; }
+                p.mesh.scale.setScalar(p.life);
+            }
+        }
+        renderer.render(scene, camera);
+    }
+
+    function startGame() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        isPlaying = true;
+        score = 0; combo = 0; ultimateCharge = 0;
+        updateUltimateUI(); scoreEl.innerText = score;
+        
+        activeMonsters.forEach(m => scene.remove(m.group)); activeMonsters.length = 0;
+        projectiles.forEach(p => scene.remove(p.mesh)); projectiles.length = 0;
+        
+        spawnTimer = 0.5; princessGroup.visible = true;
+        
+        startScreen.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        uiLayer.classList.remove('hidden');
+        
+        camera.position.set(0, 18, 40); camera.lookAt(0, 5, -50);
+        getNextWord();
+        startBGM(); // 啟動背景音樂
+    }
+
+    function loseGame() {
+        isPlaying = false;
+        stopBGM(); // 停止音樂
+        playSound('error');
+        princessGroup.visible = false;
+        createExplosion(princessGroup.position, 0xff69b4, 30); 
+        
+        const origPos = camera.position.clone(); let shakeCount = 0;
+        const shakeInterv = setInterval(() => {
+            camera.position.set(origPos.x + (Math.random()-0.5)*3, origPos.y + (Math.random()-0.5)*3, origPos.z);
+            if(++shakeCount > 20) {
+                clearInterval(shakeInterv); camera.position.copy(origPos);
+                setTimeout(() => {
+                    uiLayer.classList.add('hidden');
+                    finalScoreLoseEl.innerText = score;
+                    gameOverScreen.classList.remove('hidden');
+                }, 800);
+            }
+        }, 30);
+    }
+
+    // 綁定三個難度按鈕
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            currentDifficulty = e.target.dataset.diff;
+            startGame();
+        });
+    });
+
+    document.getElementById('restart-btn-lose').addEventListener('click', startGame);
+
+    requestAnimationFrame(animate);
+</script>
+</body>
+</html>
