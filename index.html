@@ -13,8 +13,8 @@
             margin: 0;
             overflow: hidden;
             font-family: 'Nunito', sans-serif;
-            background-color: #87ceeb; /* 白天天空藍 */
-            touch-action: none;
+            background-color: #87ceeb;
+            touch-action: none; /* 防止手機滑動縮放 */
         }
 
         #game-canvas {
@@ -45,44 +45,7 @@
             width: 100%;
         }
 
-        /* 亮色系血條 */
-        .health-container {
-            width: 40%;
-            max-width: 400px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            border: 4px solid #cbd5e1;
-            padding: 4px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-
-        .health-title {
-            color: #334155;
-            font-size: 16px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 4px;
-        }
-
-        .health-bar-bg {
-            width: 100%;
-            height: 24px;
-            background-color: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #health-bar-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: inset 0 -3px 5px rgba(0,0,0,0.1);
-        }
-
-        /* 分數與 Combo (改為深色邊緣好在藍天辨識) */
+        /* 分數與Combo */
         .score-board {
             text-align: right;
             color: #fff;
@@ -93,26 +56,6 @@
             font-size: 36px;
             font-family: 'Poppins', sans-serif;
             color: #fbbf24;
-        }
-
-        #combo-display {
-            font-size: 28px;
-            color: #fef08a;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.2s;
-            font-weight: 900;
-            text-shadow: 2px 2px 0px #b45309;
-        }
-        #combo-display.active {
-            opacity: 1;
-            transform: scale(1.1);
-            animation: pulse 0.5s infinite alternate;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(1) rotate(-3deg); }
-            to { transform: scale(1.2) rotate(3deg); }
         }
 
         .bottom-bar {
@@ -135,15 +78,16 @@
             font-size: 64px;
             letter-spacing: 8px;
             font-family: 'Poppins', sans-serif;
-            color: #94a3b8; /* 未打字部分灰色 */
+            color: #94a3b8;
             font-weight: 800;
         }
 
         .typed-char {
-            color: #2563eb; /* 已打字藍色 */
+            color: #2563eb;
             text-shadow: 2px 2px 0px #bfdbfe;
         }
         
+        /* 錯誤震動效果 */
         .error-shake {
             animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
         }
@@ -189,7 +133,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(135, 206, 235, 0.85); /* 半透明天空藍 */
+            background: rgba(135, 206, 235, 0.85);
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
@@ -211,6 +155,7 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.2);
             border: 4px solid #bae6fd;
             max-width: 650px;
+            width: 90%;
         }
 
         .overlay h1 {
@@ -229,14 +174,13 @@
             font-weight: bold;
         }
 
-        /* 非常清楚的高對比按鈕 */
         button {
             padding: 15px 50px;
             font-size: 28px;
             font-family: 'Poppins', sans-serif;
             font-weight: 900;
-            background: #facc15; /* 亮黃色 */
-            color: #172554; /* 極深藍/近黑色文字 */
+            background: #facc15;
+            color: #172554;
             border: 4px solid #ca8a04;
             border-radius: 20px;
             cursor: pointer;
@@ -259,21 +203,100 @@
             padding: 5px 15px;
             border-radius: 10px;
         }
+
+        #virtual-keyboard {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            margin: 10px auto 0 auto;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: auto;
+        }
+        
+        @media (hover: none) and (pointer: coarse), (max-width: 768px) {
+            #virtual-keyboard {
+                display: flex;
+            }
+            #instruction {
+                display: none;
+            }
+            .bottom-bar {
+                margin-bottom: 2vh;
+            }
+            #word-container {
+                padding: 10px 30px;
+            }
+            #target-word {
+                font-size: 48px;
+            }
+            .overlay h1 { font-size: 40px; }
+            .overlay-card { padding: 20px 30px; }
+            .diff-btn { font-size: 18px !important; padding: 10px 20px !important; }
+        }
+
+        .vk-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .vk-key {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            color: #1e3a8a;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 12px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #94a3b8;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+        }
+        .vk-key:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #94a3b8;
+        }
+        .vk-key.ultimate-key {
+            background: #facc15;
+            border-color: #ca8a04;
+            box-shadow: 0 4px 0 #a16207;
+            color: #172554;
+            font-size: 18px;
+            margin-top: 5px;
+            padding: 15px 0;
+        }
+        .vk-key.ultimate-key:active {
+            box-shadow: 0 0 0 #a16207;
+        }
+
+        .diff-btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .diff-btn {
+            padding: 12px 30px;
+            font-size: 22px;
+        }
     </style>
 </head>
 <body>
 
 <canvas id="game-canvas"></canvas>
 
-<!-- UI 層 -->
 <div id="ui-layer" class="hidden">
     <div class="top-bar flex justify-between w-full">
-        
         <!-- 左側：大絕招集氣環 -->
         <div id="ultimate-container" class="flex items-center bg-white/90 p-2 rounded-full border-4 border-slate-300 shadow-lg" style="pointer-events: auto;">
             <svg class="w-16 h-16 transform -rotate-90">
                 <circle cx="32" cy="32" r="26" stroke="#e2e8f0" stroke-width="8" fill="none" />
-                <!-- 2 * PI * 26 = 163.36 -->
                 <circle id="ultimate-ring" cx="32" cy="32" r="26" stroke="#f59e0b" stroke-width="8" fill="none" stroke-dasharray="164" stroke-dashoffset="164" class="transition-all duration-300 ease-in-out" stroke-linecap="round" />
             </svg>
             <div class="ml-3 mr-5 font-black text-slate-700">
@@ -295,19 +318,42 @@
             <div id="zh-translation">蘋果</div>
         </div>
         <div id="instruction">使用鍵盤輸入單字發射魔法！集滿 3 次按【空白鍵】發動大絕！</div>
+        
+        <div id="virtual-keyboard">
+            <div class="vk-row">
+                <div class="vk-key" data-key="Q">Q</div><div class="vk-key" data-key="W">W</div><div class="vk-key" data-key="E">E</div><div class="vk-key" data-key="R">R</div><div class="vk-key" data-key="T">T</div><div class="vk-key" data-key="Y">Y</div><div class="vk-key" data-key="U">U</div><div class="vk-key" data-key="I">I</div><div class="vk-key" data-key="O">O</div><div class="vk-key" data-key="P">P</div>
+            </div>
+            <div class="vk-row">
+                <div style="flex:0.5;"></div>
+                <div class="vk-key" data-key="A">A</div><div class="vk-key" data-key="S">S</div><div class="vk-key" data-key="D">D</div><div class="vk-key" data-key="F">F</div><div class="vk-key" data-key="G">G</div><div class="vk-key" data-key="H">H</div><div class="vk-key" data-key="J">J</div><div class="vk-key" data-key="K">K</div><div class="vk-key" data-key="L">L</div>
+                <div style="flex:0.5;"></div>
+            </div>
+            <div class="vk-row">
+                <div style="flex:1;"></div>
+                <div class="vk-key" data-key="Z">Z</div><div class="vk-key" data-key="X">X</div><div class="vk-key" data-key="C">C</div><div class="vk-key" data-key="V">V</div><div class="vk-key" data-key="B">B</div><div class="vk-key" data-key="N">N</div><div class="vk-key" data-key="M">M</div>
+                <div style="flex:1;"></div>
+            </div>
+            <div class="vk-row">
+                <div class="vk-key ultimate-key" data-key="SPACE">⚡ 發動大絕招 ⚡</div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- 開始畫面 -->
 <div id="start-screen" class="overlay">
     <div class="overlay-card">
         <h1>3D 單字怪獸</h1>
-        <p>遠方出現了<span style="color:#ef4444;">無盡的怪獸軍團</span>！<br>請在鍵盤上打出正確的英文單字，<br>發射魔法球將牠們一一擊退！<br><br><span style="color:#d97706;">(打對 3 個單字集滿能量，按【空白鍵】發動清場大絕！)</span></p>
-        <button id="start-btn">開始防禦</button>
+        <p>遠方出現了<span style="color:#ef4444;">無盡的怪獸軍團</span>！<br>請輸入正確的英文單字，<br>發射魔法球將牠們擊退！<br><br><span style="color:#d97706; font-size: 18px;">(集滿 3 次能量，按【空白鍵】發動清場大絕！)</span></p>
+        
+        <h3 style="color:#1e3a8a; margin-bottom:10px; font-weight:bold;">請選擇難度：</h3>
+        <div class="diff-btn-container">
+            <button class="diff-btn" data-diff="easy" style="background:#86efac; border-color:#22c55e; box-shadow: 0 8px 0 #16a34a;">簡易</button>
+            <button class="diff-btn" data-diff="normal" style="background:#fcd34d; border-color:#f59e0b; box-shadow: 0 8px 0 #d97706;">普通</button>
+            <button class="diff-btn" data-diff="hard" style="background:#fca5a5; border-color:#ef4444; box-shadow: 0 8px 0 #dc2626; color:white;">困難</button>
+        </div>
     </div>
 </div>
 
-<!-- 遊戲結束畫面 -->
 <div id="game-over-screen" class="overlay hidden">
     <div class="overlay-card" style="border-color: #fca5a5;">
         <h1 style="color: #dc2626;">防線失守了...</h1>
@@ -316,18 +362,8 @@
     </div>
 </div>
 
-<!-- 勝利畫面 -->
-<div id="victory-screen" class="overlay hidden">
-        <p>怪獸靠近了公主，防線被突破了！<br>最終分數: <span id="final-score-lose" style="font-size:36px; color:#b91c1c;">0</span></p>
-        <button id="restart-btn-lose" style="background:#ef4444; color:white; border-color:#b91c1c; box-shadow: 0 8px 0 #7f1d1d;">再挑戰一次</button>
-    </div>
-</div>
-
-<!-- 移除原本的 victory-screen (勝利畫面)，因為改為無盡模式了 -->
-
 <script>
-    const wordList = [
-        // 3字母單字 (大量，佔了一半以上)
+    const words3 = [
         {en: "CAT", zh: "貓咪"}, {en: "DOG", zh: "狗狗"}, {en: "PIG", zh: "豬"}, 
         {en: "COW", zh: "牛"}, {en: "FOX", zh: "狐狸"}, {en: "BAT", zh: "蝙蝠"}, 
         {en: "BEE", zh: "蜜蜂"}, {en: "BUG", zh: "蟲子"}, {en: "ANT", zh: "螞蟻"},
@@ -337,60 +373,84 @@
         {en: "NUT", zh: "堅果"}, {en: "PIE", zh: "派"}, {en: "TOY", zh: "玩具"}, 
         {en: "BOY", zh: "男孩"}, {en: "RED", zh: "紅色"}, {en: "DAY", zh: "白天"},
         {en: "CAR", zh: "汽車"}, {en: "BUS", zh: "公車"}, {en: "PEN", zh: "筆"},
-        {en: "EYE", zh: "眼睛"}, {en: "EAR", zh: "耳朵"}, {en: "LEG", zh: "腿"},
-        
-        // 4字母單字 (適量)
+        {en: "EYE", zh: "眼睛"}, {en: "EAR", zh: "耳朵"}, {en: "LEG", zh: "腿"}
+    ];
+
+    const words4 = [
         {en: "BIRD", zh: "小鳥"}, {en: "FISH", zh: "魚"}, {en: "BEAR", zh: "熊"}, 
         {en: "LION", zh: "獅子"}, {en: "WOLF", zh: "狼"}, {en: "FROG", zh: "青蛙"},
         {en: "BLUE", zh: "藍色"}, {en: "PINK", zh: "粉紅色"}, {en: "STAR", zh: "星星"}, 
         {en: "MOON", zh: "月亮"}, {en: "RAIN", zh: "雨"}, {en: "SNOW", zh: "雪"}, 
-        {en: "WIND", zh: "風"}, {en: "TREE", zh: "樹木"}, {en: "BOOK", zh: "書本"}, 
-        {en: "DESK", zh: "書桌"}, {en: "DOOR", zh: "門"}, {en: "HOME", zh: "家"},
-        {en: "JUMP", zh: "跳躍"}, {en: "WALK", zh: "走路"}, {en: "SWIM", zh: "游泳"},
-        {en: "PLAY", zh: "玩耍"}, {en: "GAME", zh: "遊戲"}, {en: "HERO", zh: "英雄"},
-        
-        // 5字母以上單字 (極少量，當作小挑戰)
-        {en: "APPLE", zh: "蘋果"}, {en: "GRAPE", zh: "葡萄"}, {en: "TIGER", zh: "老虎"},
-        {en: "WATER", zh: "水"}, {en: "SMILE", zh: "微笑"}, {en: "MAGIC", zh: "魔法"}
+        {en: "TREE", zh: "樹木"}, {en: "BOOK", zh: "書本"}, {en: "DESK", zh: "書桌"}, 
+        {en: "DOOR", zh: "門"}, {en: "HOME", zh: "家"}, {en: "JUMP", zh: "跳躍"}, 
+        {en: "WALK", zh: "走路"}, {en: "SWIM", zh: "游泳"}, {en: "PLAY", zh: "玩耍"}
     ];
 
+    const words5 = [
+        {en: "APPLE", zh: "蘋果"}, {en: "GRAPE", zh: "葡萄"}, {en: "TIGER", zh: "老虎"},
+        {en: "WATER", zh: "水"}, {en: "SMILE", zh: "微笑"}, {en: "MAGIC", zh: "魔法"},
+        {en: "HAPPY", zh: "快樂"}, {en: "BREAD", zh: "麵包"}, {en: "CHAIR", zh: "椅子"}
+    ];
+
+    let currentDifficulty = 'normal';
     let currentWordObj = null;
     let currentWord = "";
     let typedWord = "";
     
-    const MAX_HEALTH = 150; 
-    let monsterHealth = MAX_HEALTH;
     let score = 0;
     let combo = 0;
     let ultimateCharge = 0;
     let isPlaying = false;
     
-    // 設定較遠的距離讓玩家有足夠時間
     const START_Z = -280; 
     const END_Z = -15;    
-    let monsterZ = START_Z;
-    let monsterBaseSpeed = 5; 
-    let currentMonsterSpeed = monsterBaseSpeed;
+    let monsterBaseSpeed = 3.5; // 調慢怪獸基礎速度
 
     // DOM 元素
     const uiLayer = document.getElementById('ui-layer');
-    const healthBarFill = document.getElementById('health-bar-fill');
     const targetWordEl = document.getElementById('target-word');
     const scoreEl = document.getElementById('score');
-    const comboDisplayEl = document.getElementById('combo-display');
-    const comboCountEl = document.getElementById('combo-count');
     const wordContainer = document.getElementById('word-container');
-
     const startScreen = document.getElementById('start-screen');
     const gameOverScreen = document.getElementById('game-over-screen');
-    const victoryScreen = document.getElementById('victory-screen');
     const finalScoreLoseEl = document.getElementById('final-score-lose');
-    const finalScoreWinEl = document.getElementById('final-score-win');
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
+    let bgmInterval = null;
+    let bgmNoteIndex = 0;
+    // 簡單溫馨的瑪莉歐風小調
+    const bgmNotes = [392, 329.63, 261.63, 329.63, 392, 392, 440, 392, 329.63, 261.63, 293.66, 329.63, 261.63]; 
+
+    function startBGM() {
+        if (bgmInterval) clearInterval(bgmInterval);
+        bgmNoteIndex = 0;
+        bgmInterval = setInterval(() => {
+            if(!isPlaying || audioCtx.state !== 'running') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine'; // 像鐵琴的柔和聲音
+            osc.frequency.setValueAtTime(bgmNotes[bgmNoteIndex % bgmNotes.length], now);
+            
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.03, now + 0.05); // 音量非常小，當背景音樂
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            
+            osc.start(now);
+            osc.stop(now + 0.5);
+            bgmNoteIndex++;
+        }, 500);
+    }
+
+    function stopBGM() {
+        if(bgmInterval) clearInterval(bgmInterval);
+    }
+
     function playSound(type) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') return;
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -406,7 +466,6 @@
             osc.start(now);
             osc.stop(now + 0.1);
         } else if (type === 'ultimate') {
-            // 大絕招音效 (強烈的能量聲)
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(200, now);
             osc.frequency.exponentialRampToValueAtTime(30, now + 1.5);
@@ -414,21 +473,7 @@
             gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
             osc.start(now);
             osc.stop(now + 1.5);
-            
-            // 搭配低音震動
-            const osc2 = audioCtx.createOscillator();
-            const gain2 = audioCtx.createGain();
-            osc2.connect(gain2);
-            gain2.connect(audioCtx.destination);
-            osc2.type = 'square';
-            osc2.frequency.setValueAtTime(100, now);
-            osc2.frequency.linearRampToValueAtTime(20, now + 1.2);
-            gain2.gain.setValueAtTime(0.4, now);
-            gain2.gain.linearRampToValueAtTime(0.001, now + 1.2);
-            osc2.start(now);
-            osc2.stop(now + 1.2);
         } else if (type === 'error') {
-            // 錯誤聲
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(150, now);
             osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
@@ -437,7 +482,6 @@
             osc.start(now);
             osc.stop(now + 0.2);
         } else if (type === 'hit') {
-            // 打擊聲
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(300, now);
             osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
@@ -445,38 +489,26 @@
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
             osc.start(now);
             osc.stop(now + 0.1);
-        } else if (type === 'shoot') {
-            // 發射魔法
+        } else if (type === 'shoot' || type === 'shoot-combo') {
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.setValueAtTime(type === 'shoot-combo' ? 800 : 600, now);
             osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
             gain.gain.setValueAtTime(0.1, now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
             osc.start(now);
             osc.stop(now + 0.1);
-        } else if (type === 'shoot-combo') {
-            // Combo 發射魔法 (更有力)
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(800, now);
-            osc.frequency.exponentialRampToValueAtTime(200, now + 0.2);
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-            osc.start(now);
-            osc.stop(now + 0.2);
         }
     }
 
     const canvas = document.getElementById('game-canvas');
     const scene = new THREE.Scene();
     
-    // 設定為白天藍天色
     const SKY_COLOR = 0x87CEEB;
     scene.background = new THREE.Color(SKY_COLOR);
-    // 使用與天空同色的霧氣，製造非常平滑的遠方消失線
     scene.fog = new THREE.FogExp2(SKY_COLOR, 0.004);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 18, 40); // 攝影機稍微拉高
+    camera.position.set(0, 18, 40);
     camera.lookAt(0, 5, -50);
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
@@ -491,10 +523,10 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // 明亮的環境光
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffae6, 1.2); // 帶一點暖色的陽光
+    const sunLight = new THREE.DirectionalLight(0xfffae6, 1.2);
     sunLight.position.set(50, 150, 50);
     sunLight.castShadow = true;
     sunLight.shadow.camera.top = 100;
@@ -504,527 +536,314 @@
     sunLight.shadow.camera.far = 500;
     scene.add(sunLight);
 
-    // 草原
     const groundGeo = new THREE.PlaneGeometry(2000, 2000);
-    const groundMat = new THREE.MeshStandardMaterial({ 
-        color: 0x7cfc00, // 草綠色
-        roughness: 0.9,
-        metalness: 0.1
-    });
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x7cfc00, roughness: 0.9, metalness: 0.1 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // 中間的泥土小徑 (引導視覺向遠方)
     const pathGeo = new THREE.PlaneGeometry(30, 1000);
     const pathMat = new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 1 });
     const path = new THREE.Mesh(pathGeo, pathMat);
     path.rotation.x = -Math.PI / 2;
-    path.position.y = 0.1; // 稍微浮在草地上一點點
+    path.position.y = 0.1;
     path.receiveShadow = true;
     scene.add(path);
 
     const envObjects = [];
 
-    // 1. 建立雲朵
     const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
     for(let i=0; i<15; i++) {
         const cloudGroup = new THREE.Group();
-        // 用 3-5 個圓球拼湊一朵雲
         const puffs = Math.floor(Math.random() * 3) + 3;
         for(let j=0; j<puffs; j++) {
-            const puffGeo = new THREE.SphereGeometry(Math.random()*4+4, 16, 16);
-            const puff = new THREE.Mesh(puffGeo, cloudMat);
-            puff.position.set(
-                (Math.random()-0.5)*10, 
-                (Math.random()-0.5)*4, 
-                (Math.random()-0.5)*10
-            );
+            const puff = new THREE.Mesh(new THREE.SphereGeometry(Math.random()*4+4, 16, 16), cloudMat);
+            puff.position.set((Math.random()-0.5)*10, (Math.random()-0.5)*4, (Math.random()-0.5)*10);
             cloudGroup.add(puff);
         }
-        // 隨機分布在天空中
-        cloudGroup.position.set(
-            (Math.random()-0.5)*200, 
-            Math.random()*30 + 40, 
-            -Math.random()*400
-        );
+        cloudGroup.position.set((Math.random()-0.5)*200, Math.random()*30 + 40, -Math.random()*400);
         scene.add(cloudGroup);
         envObjects.push({ mesh: cloudGroup, type: 'cloud', speed: Math.random()*2+1 });
     }
 
-    // 2. 建立樹木 (沿著小徑兩側)
     const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
     const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22, flatShading: true });
     
     for(let z = -20; z >= -400; z -= 30) {
-        // 左右兩側各一棵
         [-1, 1].forEach(side => {
-            if(Math.random() > 0.8) return; // 稍微有點不規則
+            if(Math.random() > 0.8) return;
             const tree = new THREE.Group();
-            
-            // 樹幹
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2, 8), trunkMat);
             trunk.position.y = 4;
             trunk.castShadow = true;
-            tree.add(trunk);
             
-            // 樹葉
             const leaves = new THREE.Mesh(new THREE.ConeGeometry(6, 15, 8), leavesMat);
             leaves.position.y = 12;
             leaves.castShadow = true;
-            tree.add(leaves);
-
+            
+            tree.add(trunk, leaves);
             tree.position.set(side * (Math.random()*10 + 25), 0, z + (Math.random()-0.5)*10);
             scene.add(tree);
         });
     }
 
-    // 3. 建立小花朵
-    const flowerColors = [0xff69b4, 0xffff00, 0xff4500, 0x9370db];
-    for(let i=0; i<100; i++) {
-        const fMat = new THREE.MeshStandardMaterial({ color: flowerColors[Math.floor(Math.random()*flowerColors.length)] });
-        const flower = new THREE.Mesh(new THREE.SphereGeometry(0.8, 8, 8), fMat);
-        
-        // 避開中間小徑
-        let fX = (Math.random()-0.5) * 150;
-        if(Math.abs(fX) < 16) fX = 16 * Math.sign(fX || 1); 
-        
-        flower.position.set(fX, 0.4, -Math.random()*300);
-        scene.add(flower);
-    }
-
-
     const princessGroup = new THREE.Group();
     princessGroup.position.set(0, 0, 0);
 
-    // 身體/裙子 (粉紅小圓錐)
-    const dressGeo = new THREE.ConeGeometry(3, 5, 32);
-    const dressMat = new THREE.MeshStandardMaterial({ color: 0xff69b4, roughness: 0.6 });
-    const dress = new THREE.Mesh(dressGeo, dressMat);
-    dress.position.y = 2.5;
-    dress.castShadow = true;
-    princessGroup.add(dress);
+    const dress = new THREE.Mesh(new THREE.ConeGeometry(3, 5, 32), new THREE.MeshStandardMaterial({ color: 0xff69b4, roughness: 0.6 }));
+    dress.position.y = 2.5; dress.castShadow = true;
 
-    // 臉/大頭 (超大比例才可愛)
-    const headGeo = new THREE.SphereGeometry(3.5, 32, 32);
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xffe0bd, roughness: 0.3 });
-    const head = new THREE.Mesh(headGeo, headMat);
-    head.position.y = 7.5;
-    head.castShadow = true;
-    princessGroup.add(head);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(3.5, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffe0bd, roughness: 0.3 }));
+    head.position.y = 7.5; head.castShadow = true;
 
-    // 眼睛 (小黑圓球)
-    const eyeGeo = new THREE.SphereGeometry(0.4, 16, 16);
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-    const lEye = new THREE.Mesh(eyeGeo, eyeMat);
-    lEye.position.set(-1.2, 7.8, 3.2);
-    const rEye = new THREE.Mesh(eyeGeo, eyeMat);
-    rEye.position.set(1.2, 7.8, 3.2);
-    princessGroup.add(lEye, rEye);
+    const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), eyeMat); lEye.position.set(-1.2, 7.8, 3.2);
+    const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), eyeMat); rEye.position.set(1.2, 7.8, 3.2);
 
-    // 腮紅 (粉紅小扁圓)
-    const blushGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 16);
     const blushMat = new THREE.MeshBasicMaterial({ color: 0xff99aa });
-    const lBlush = new THREE.Mesh(blushGeo, blushMat);
-    lBlush.rotation.x = Math.PI/2;
-    lBlush.position.set(-1.8, 6.8, 3.1);
-    const rBlush = new THREE.Mesh(blushGeo, blushMat);
-    rBlush.rotation.x = Math.PI/2;
-    rBlush.position.set(1.8, 6.8, 3.1);
-    princessGroup.add(lBlush, rBlush);
+    const blushGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 16);
+    const lBlush = new THREE.Mesh(blushGeo, blushMat); lBlush.rotation.x = Math.PI/2; lBlush.position.set(-1.8, 6.8, 3.1);
+    const rBlush = new THREE.Mesh(blushGeo, blushMat); rBlush.rotation.x = Math.PI/2; rBlush.position.set(1.8, 6.8, 3.1);
 
-    // 頭髮 (黃色半圓/球體組合)
-    const hairMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.8 });
-    const backHair = new THREE.Mesh(new THREE.SphereGeometry(3.7, 32, 32, 0, Math.PI*2, 0, Math.PI/2 + 0.5), hairMat);
-    backHair.position.y = 7.5;
-    backHair.rotation.x = -Math.PI/2;
-    princessGroup.add(backHair);
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(3.7, 32, 32, 0, Math.PI*2, 0, Math.PI/2 + 0.5), new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.8 }));
+    hair.position.y = 7.5; hair.rotation.x = -Math.PI/2;
 
-    // 皇冠 (小巧可愛)
-    const crownGeo = new THREE.CylinderGeometry(1.5, 1, 1.2, 16);
-    const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
-    const crown = new THREE.Mesh(crownGeo, crownMat);
-    crown.position.y = 11.2;
-    crown.castShadow = true;
-    princessGroup.add(crown);
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1, 1.2, 16), new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 }));
+    crown.position.y = 11.2; crown.castShadow = true;
 
+    princessGroup.add(dress, head, lEye, rEye, lBlush, rBlush, hair, crown);
     scene.add(princessGroup);
 
-    // --- 準備怪獸共用的幾何體 ---
-    const bodyGeo = new THREE.BoxGeometry(14, 16, 12);
-    const bellyGeo = new THREE.CylinderGeometry(4, 5, 8, 16);
-    const bigEyeGeo = new THREE.SphereGeometry(2.5, 32, 32);
-    const pupilGeo = new THREE.SphereGeometry(1, 16, 16);
-    const mouthGeo = new THREE.PlaneGeometry(10, 4);
-    const toothGeo = new THREE.ConeGeometry(0.8, 2, 4);
-    const hornGeo = new THREE.ConeGeometry(1.5, 5, 8);
-    
-    // 共用材質
-    const bellyMat = new THREE.MeshStandardMaterial({ color: 0xffd700 });
-    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const blackMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const hornMat = new THREE.MeshStandardMaterial({ color: 0x8b0000 });
-
-    // 遊戲狀態與怪獸陣列
     const activeMonsters = [];
     let spawnTimer = 1.0;
-    let baseSpawnInterval = 3.5;
+    let baseSpawnInterval = 4.5; // 調慢生成頻率
 
     function spawnMonster() {
         const group = new THREE.Group();
         group.position.set(0, 0, START_Z);
 
-        // 決定怪獸種類：機率出現大型血多的怪獸
         const isBig = Math.random() > 0.8; 
-        const originalColor = isBig ? 0x9333ea : 0xff4500; // 大型紫色，小型橘紅色
+        const originalColor = isBig ? 0x9333ea : 0xff4500;
         const hp = isBig ? 30 : 10;
-        const speed = isBig ? 12 : (15 + Math.random() * 8 + (score / 1000)); // 隨機速度加上分數加成
+        // 怪獸速度更慢
+        const speed = isBig ? (monsterBaseSpeed * 0.8) : (monsterBaseSpeed + Math.random()*2 + (score/2000));
 
         const bodyMat = new THREE.MeshStandardMaterial({ color: originalColor, roughness: 0.7 });
+        const mBody = new THREE.Mesh(new THREE.BoxGeometry(14, 16, 12), bodyMat);
+        mBody.position.y = 8; mBody.castShadow = true;
         
-        const mBody = new THREE.Mesh(bodyGeo, bodyMat);
-        mBody.position.y = 8;
-        mBody.castShadow = true;
-        group.add(mBody);
+        const belly = new THREE.Mesh(new THREE.CylinderGeometry(4, 5, 8, 16), new THREE.MeshStandardMaterial({ color: 0xffd700 }));
+        belly.rotation.z = Math.PI/2; belly.rotation.y = Math.PI/2; belly.position.set(0, 6, 5.5);
 
-        const belly = new THREE.Mesh(bellyGeo, bellyMat);
-        belly.rotation.z = Math.PI/2; 
-        belly.rotation.y = Math.PI/2;
-        belly.position.set(0, 6, 5.5);
-        group.add(belly);
+        const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const blackMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const bigEyeGeo = new THREE.SphereGeometry(2.5, 32, 32);
+        const pupilGeo = new THREE.SphereGeometry(1, 16, 16);
 
-        const mLeftEye = new THREE.Mesh(bigEyeGeo, whiteMat);
-        mLeftEye.position.set(-3.5, 13, 6);
-        const mLeftPupil = new THREE.Mesh(pupilGeo, blackMat);
-        mLeftPupil.position.set(-3.5, 13, 8.1);
+        const lEye = new THREE.Mesh(bigEyeGeo, whiteMat); lEye.position.set(-3.5, 13, 6);
+        const lPupil = new THREE.Mesh(pupilGeo, blackMat); lPupil.position.set(-3.5, 13, 8.1);
+        const rEye = new THREE.Mesh(bigEyeGeo, whiteMat); rEye.position.set(3.5, 13, 6);
+        const rPupil = new THREE.Mesh(pupilGeo, blackMat); rPupil.position.set(3.5, 13, 8.1);
+        
+        const mouth = new THREE.Mesh(new THREE.PlaneGeometry(10, 4), blackMat); mouth.position.set(0, 8, 6.1);
+        
+        const hornMat = new THREE.MeshStandardMaterial({ color: 0x8b0000 });
+        const lHorn = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 8), hornMat); lHorn.position.set(-4, 17, 3); lHorn.rotation.z = Math.PI/8;
+        const rHorn = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 8), hornMat); rHorn.position.set(4, 17, 3); rHorn.rotation.z = -Math.PI/8;
 
-        const mRightEye = new THREE.Mesh(bigEyeGeo, whiteMat);
-        mRightEye.position.set(3.5, 13, 6);
-        const mRightPupil = new THREE.Mesh(pupilGeo, blackMat);
-        mRightPupil.position.set(3.5, 13, 8.1);
-
-        group.add(mLeftEye, mLeftPupil, mRightEye, mRightPupil);
-
-        const mouth = new THREE.Mesh(mouthGeo, blackMat);
-        mouth.position.set(0, 8, 6.1);
-        group.add(mouth);
-
-        for(let i=-4; i<=4; i+=2.5) {
-            const topTooth = new THREE.Mesh(toothGeo, whiteMat);
-            topTooth.position.set(i, 9.5, 6.1);
-            topTooth.rotation.z = Math.PI; 
-            const botTooth = new THREE.Mesh(toothGeo, whiteMat);
-            botTooth.position.set(i, 6.5, 6.1);
-            group.add(topTooth, botTooth);
-        }
-
-        const lHorn = new THREE.Mesh(hornGeo, hornMat);
-        lHorn.position.set(-4, 17, 3);
-        lHorn.rotation.z = Math.PI/8;
-        const rHorn = new THREE.Mesh(hornGeo, hornMat);
-        rHorn.position.set(4, 17, 3);
-        rHorn.rotation.z = -Math.PI/8;
-        group.add(lHorn, rHorn);
-
-        if (isBig) {
-            group.scale.set(1.4, 1.4, 1.4); // 巨大化
-        }
+        group.add(mBody, belly, lEye, lPupil, rEye, rPupil, mouth, lHorn, rHorn);
+        if (isBig) group.scale.set(1.4, 1.4, 1.4);
 
         scene.add(group);
-        activeMonsters.push({
-            group: group,
-            bodyMat: bodyMat,
-            originalColor: originalColor,
-            isBig: isBig,
-            hp: hp,
-            speed: speed,
-            z: START_Z
-        });
+        activeMonsters.push({ group: group, bodyMat: bodyMat, originalColor: originalColor, isBig: isBig, hp: hp, speed: speed, z: START_Z });
     }
 
     const projectiles = [];
     const particles = [];
 
     function shootProjectile(isCombo) {
-        const pGeo = new THREE.SphereGeometry(isCombo ? 3 : 1.5, 16, 16);
-        const pMat = new THREE.MeshBasicMaterial({ 
-            color: isCombo ? 0xffff00 : 0x00e5ff 
-        });
-        const projectile = new THREE.Mesh(pGeo, pMat);
-        
-        const pLight = new THREE.PointLight(isCombo ? 0xffff00 : 0x00e5ff, 2, 30);
-        projectile.add(pLight);
-
-        // 從公主法杖(頭上)發射
+        const projectile = new THREE.Mesh(
+            new THREE.SphereGeometry(isCombo ? 3 : 1.5, 16, 16),
+            new THREE.MeshBasicMaterial({ color: isCombo ? 0xffff00 : 0x00e5ff })
+        );
+        projectile.add(new THREE.PointLight(isCombo ? 0xffff00 : 0x00e5ff, 2, 30));
         projectile.position.copy(princessGroup.position);
         projectile.position.y += 12;
         
         scene.add(projectile);
-        
-        projectiles.push({
-            mesh: projectile,
-            isCombo: isCombo,
-            speed: isCombo ? 200 : 120 // Combo 球飛更快
-        });
-
+        projectiles.push({ mesh: projectile, isCombo: isCombo, speed: isCombo ? 200 : 120 });
         playSound(isCombo ? 'shoot-combo' : 'shoot');
     }
 
     function createExplosion(position, color, count) {
         for(let i=0; i<count; i++) {
-            const size = Math.random() * 2 + 1;
-            const mat = new THREE.MeshBasicMaterial({ color: color });
-            const p = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mat);
+            const p = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: color }));
             p.position.copy(position);
-            
-            const velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * 50,
-                Math.random() * 50 + 10,
-                (Math.random() - 0.5) * 50
-            );
-
             scene.add(p);
             particles.push({
                 mesh: p,
-                velocity: velocity,
+                velocity: new THREE.Vector3((Math.random()-0.5)*50, Math.random()*50+10, (Math.random()-0.5)*50),
                 life: 1.0 
             });
         }
     }
 
-    // 大絕招：瞬間消滅所有怪獸
     function castUltimate() {
         playSound('ultimate');
-        
-        // 全螢幕強烈白光閃爍
         const flash = document.createElement('div');
-        flash.style.position = 'fixed';
-        flash.style.top = '0';
-        flash.style.left = '0';
-        flash.style.width = '100vw';
-        flash.style.height = '100vh';
-        flash.style.backgroundColor = '#ffffff';
-        flash.style.zIndex = '9999';
-        flash.style.pointerEvents = 'none';
-        flash.style.transition = 'opacity 0.8s ease-out';
+        flash.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fff; z-index:9999; pointer-events:none; transition:opacity 0.8s ease-out;';
         document.body.appendChild(flash);
         
-        // 攝影機強烈震動
-        let shakeCount = 0;
-        const originalPos = camera.position.clone();
+        let shakeCount = 0; const originalPos = camera.position.clone();
         const shakeInterval = setInterval(() => {
-            camera.position.set(
-                originalPos.x + (Math.random()-0.5)*10,
-                originalPos.y + (Math.random()-0.5)*10,
-                originalPos.z
-            );
-            shakeCount++;
-            if(shakeCount > 20) {
-                clearInterval(shakeInterval);
-                camera.position.copy(originalPos);
-            }
+            camera.position.set(originalPos.x + (Math.random()-0.5)*10, originalPos.y + (Math.random()-0.5)*10, originalPos.z);
+            if(++shakeCount > 20) { clearInterval(shakeInterval); camera.position.copy(originalPos); }
         }, 40);
 
-        // 閃光消失
-        setTimeout(() => { flash.style.opacity = '0'; }, 100);
-        setTimeout(() => { flash.remove(); }, 900);
+        setTimeout(() => flash.style.opacity = '0', 100);
+        setTimeout(() => flash.remove(), 900);
 
-        // 消滅陣列中所有怪獸並爆炸
         for (let i = activeMonsters.length - 1; i >= 0; i--) {
             const m = activeMonsters[i];
-            // 產生巨大爆炸效果
             createExplosion(m.group.position, m.originalColor, 60); 
             scene.remove(m.group);
-            
-            // 每殺一隻額外大加分
             score += 500; 
             showFloatingDamage('大絕秒殺!', m.group.position);
         }
-        
-        // 清空怪獸陣列
         activeMonsters.length = 0; 
-        updateUI();
+        scoreEl.innerText = score;
     }
 
     function getNextWord() {
-        const randomIndex = Math.floor(Math.random() * wordList.length);
-        currentWordObj = wordList[randomIndex];
+        let pool;
+        const rand = Math.random();
+        // 依據選擇的難度，大幅調整短單字出現比例
+        if (currentDifficulty === 'easy') {
+            pool = (rand < 0.85) ? words3 : words4; // 85%是3個字
+        } else if (currentDifficulty === 'normal') {
+            if (rand < 0.50) pool = words3;
+            else if (rand < 0.90) pool = words4;
+            else pool = words5;
+        } else {
+            if (rand < 0.20) pool = words3;
+            else if (rand < 0.70) pool = words4;
+            else pool = words5;
+        }
+
+        currentWordObj = pool[Math.floor(Math.random() * pool.length)];
         currentWord = currentWordObj.en;
         typedWord = "";
-        
-        // 更新中文翻譯
         document.getElementById('zh-translation').innerText = currentWordObj.zh;
-        
         updateWordDisplay();
     }
 
     function updateWordDisplay() {
-        let displayHTML = "";
+        let html = "";
         for (let i = 0; i < currentWord.length; i++) {
-            if (i < typedWord.length) {
-                displayHTML += `<span class="typed-char">${currentWord[i]}</span>`;
-            } else {
-                displayHTML += `<span>${currentWord[i]}</span>`;
-            }
+            html += (i < typedWord.length) ? `<span class="typed-char">${currentWord[i]}</span>` : `<span>${currentWord[i]}</span>`;
         }
-        targetWordEl.innerHTML = displayHTML;
+        targetWordEl.innerHTML = html;
     }
 
     function updateUltimateUI() {
         const ring = document.getElementById('ultimate-ring');
         const text = document.getElementById('ultimate-text');
         const hint = document.getElementById('ultimate-hint');
-        const maxDash = 164; // 對應 HTML 裡的 stroke-dasharray
         
-        let charge = Math.min(ultimateCharge, 3);
-        let offset = maxDash - (charge / 3) * maxDash;
-        
-        ring.style.strokeDashoffset = offset;
+        let charge = Math.min(ultimateCharge, 3); // 3次即滿
+        ring.style.strokeDashoffset = 164 - (charge / 3) * 164;
         text.innerText = charge === 3 ? "MAX!" : `${charge}/3`;
         
         if (charge === 3) {
-            ring.style.stroke = "#ef4444"; // 滿了變為紅色
-            text.classList.add('animate-pulse', 'text-red-500');
-            text.classList.remove('text-amber-500');
-            if (hint) {
-                hint.classList.remove('hidden');
-                hint.classList.add('animate-pulse');
-            }
+            ring.style.stroke = "#ef4444";
+            text.classList.replace('text-amber-500', 'text-red-500');
+            text.classList.add('animate-pulse');
+            hint.classList.remove('hidden');
+            hint.classList.add('animate-pulse');
         } else {
-            ring.style.stroke = "#f59e0b"; // 集氣中為橘黃色
-            text.classList.remove('animate-pulse', 'text-red-500');
-            text.classList.add('text-amber-500');
-            if (hint) {
-                hint.classList.add('hidden');
-                hint.classList.remove('animate-pulse');
-            }
+            ring.style.stroke = "#f59e0b";
+            text.classList.replace('text-red-500', 'text-amber-500');
+            text.classList.remove('animate-pulse');
+            hint.classList.add('hidden');
+            hint.classList.remove('animate-pulse');
         }
     }
 
-    function updateUI() {
-        // 更新分數
-        scoreEl.innerText = score;
-    }
-    
-    function showFloatingDamage(damage, position3D) {
+    function showFloatingDamage(text, pos3D) {
         const floatEl = document.createElement('div');
-        floatEl.innerText = `-${damage}`;
+        floatEl.innerText = text;
         floatEl.className = 'floating-text';
         
-        // 將該怪獸的 3D 座標轉換為螢幕 2D 座標
-        const vector = position3D.clone();
-        vector.y += 20; 
-        vector.project(camera);
-        
-        const x = (vector.x * .5 + .5) * window.innerWidth;
-        const y = (vector.y * -.5 + .5) * window.innerHeight;
-        
-        floatEl.style.left = `${x}px`;
-        floatEl.style.top = `${y}px`;
+        const vec = pos3D.clone(); vec.y += 20; vec.project(camera);
+        floatEl.style.left = `${(vec.x * .5 + .5) * window.innerWidth}px`;
+        floatEl.style.top = `${(vec.y * -.5 + .5) * window.innerHeight}px`;
         
         document.body.appendChild(floatEl);
         setTimeout(() => floatEl.remove(), 1000);
     }
 
-    function monsterHit(monster, isCombo) {
-        playSound('hit');
-        
-        let damage = 10; 
-        if (isCombo) damage += combo * 5; 
-        
-        monster.hp -= damage;
-        showFloatingDamage(damage, monster.group.position);
-        
-        // 擊退效果
-        monster.z -= (isCombo ? 25 : 10);
-        
-        // 怪獸受擊閃爍變白
-        monster.bodyMat.color.setHex(0xffffff);
-        setTimeout(() => {
-            if (monster.group) monster.bodyMat.color.setHex(monster.originalColor); 
-        }, 120);
-
-        createExplosion(monster.group.position.clone().add(new THREE.Vector3(0, 10, 5)), 0xffa500, 12);
-
-        updateUI();
-
-        if (monster.hp <= 0) {
-            // 打死這隻怪獸
-            createExplosion(monster.group.position, monster.originalColor, 40);
-            scene.remove(monster.group);
-            const index = activeMonsters.indexOf(monster);
-            if (index > -1) activeMonsters.splice(index, 1);
-        }
-    }
-
-    window.addEventListener('keydown', (e) => {
+    function handleInput(key) {
         if (!isPlaying) return;
         
-        // 按下空白鍵發動大絕
-        if (e.code === 'Space' && ultimateCharge >= 3) {
-            e.preventDefault(); // 防止畫面往下捲動
-            castUltimate();
-            ultimateCharge = 0; // 放完大絕後歸零
-            setTimeout(updateUltimateUI, 800);
+        if (key === 'SPACE') {
+            if (ultimateCharge >= 3) {
+                castUltimate();
+                ultimateCharge = 0;
+                setTimeout(updateUltimateUI, 800);
+            }
             return;
         }
         
-        const key = e.key.toUpperCase();
         if (/^[A-Z]$/.test(key)) {
-            const expectedChar = currentWord[typedWord.length];
-            
-            if (key === expectedChar) {
+            if (key === currentWord[typedWord.length]) {
                 typedWord += key;
                 playSound('type');
-                
-                // 公主微跳躍回饋
-                princessGroup.position.y = 1;
-                setTimeout(() => princessGroup.position.y = 0, 100);
+                princessGroup.position.y = 1; setTimeout(() => princessGroup.position.y = 0, 100);
 
                 if (typedWord === currentWord) {
                     combo++;
-                    if (ultimateCharge < 3) ultimateCharge++;
-                    updateUltimateUI(); // 更新集氣環
+                    if (ultimateCharge < 3) ultimateCharge++; // 累積大絕
+                    updateUltimateUI();
                     
-                    let basePoints = 100;
-                    let comboPoints = combo * 50;
-                    score += basePoints + comboPoints;
-                    
-                    // 已經改為手動發動大絕，所以這裡只負責發射魔法球
-                    // 如果 combo 累積 3 以上，發射的魔法球會有 combo 強力效果
+                    score += 100 + (combo * 50);
+                    scoreEl.innerText = score;
                     shootProjectile(combo >= 3);
-                    
                     getNextWord();
-                    updateUI();
                 } else {
                     updateWordDisplay();
                 }
             } else {
                 playSound('error');
-                combo = 0; // 打錯字，只中斷連續加分(Combo)
-                // 移除 ultimateCharge = 0; 的設定，讓打錯字不再扣除大絕招的集氣！
-                updateUltimateUI();
-                updateUI();
+                combo = 0; // 只斷連擊加分，不扣大絕招集氣！
                 
                 wordContainer.classList.remove('error-shake');
                 void wordContainer.offsetWidth; 
                 wordContainer.classList.add('error-shake');
             }
         }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') e.preventDefault();
+        handleInput(e.code === 'Space' ? 'SPACE' : e.key.toUpperCase());
+    });
+
+    // 虛擬鍵盤支援觸控
+    document.querySelectorAll('.vk-key').forEach(btn => {
+        btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); 
+            handleInput(btn.dataset.key);
+        });
     });
 
     let lastTime = 0;
-    
     function animate(currentTime) {
         requestAnimationFrame(animate);
-
         const delta = (currentTime - lastTime) / 1000; 
         lastTime = currentTime;
-        
         if (!delta || delta > 0.1) return; 
 
-        // 背景雲朵緩慢飄動
         envObjects.forEach(obj => {
             if(obj.type === 'cloud') {
                 obj.mesh.position.x += obj.speed * delta;
@@ -1033,148 +852,114 @@
         });
 
         if (isPlaying) {
-            // 生成怪獸邏輯
             spawnTimer -= delta;
             if (spawnTimer <= 0) {
                 spawnMonster();
-                // 隨著分數變高，加快生成速度 (最快 0.8 秒出一隻)
-                baseSpawnInterval = Math.max(0.8, 3.5 - (score / 1500));
+                baseSpawnInterval = Math.max(1.5, 4.5 - (score / 1500));
                 spawnTimer = baseSpawnInterval + (Math.random() * 1.0 - 0.5); 
             }
 
-            // 更新所有怪獸位置
             for (let i = activeMonsters.length - 1; i >= 0; i--) {
                 const m = activeMonsters[i];
                 m.z += m.speed * delta;
                 m.group.position.z = m.z;
-                
-                // 走路動畫
                 m.group.position.y = Math.sin(currentTime * 0.008 + m.z) * 1.5;
                 m.group.children[0].rotation.z = Math.sin(currentTime * 0.008 + m.z) * 0.08; 
 
-                // 檢查是否碰到公主
-                if (m.z >= END_Z) {
-                    loseGame();
-                }
+                if (m.z >= END_Z) loseGame();
             }
 
-            // 更新魔法球位置與碰撞判定
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const proj = projectiles[i];
                 proj.mesh.position.z -= proj.speed * delta; 
 
-                // 找出距離最近(在最前方)的怪獸
-                let target = activeMonsters.reduce((closest, current) => {
-                    return (closest === null || current.z > closest.z) ? current : closest;
-                }, null);
-
-                // 如果碰到最前方的怪獸
+                let target = activeMonsters.reduce((closest, curr) => (closest === null || curr.z > closest.z) ? curr : closest, null);
                 if (target && proj.mesh.position.z <= target.z + (target.isBig ? 15 : 10)) { 
-                    scene.remove(proj.mesh);
-                    projectiles.splice(i, 1);
-                    monsterHit(target, proj.isCombo);
+                    scene.remove(proj.mesh); projectiles.splice(i, 1);
+                    
+                    playSound('hit');
+                    let dmg = 10 + (proj.isCombo ? combo * 5 : 0);
+                    target.hp -= dmg;
+                    showFloatingDamage(`-${dmg}`, target.group.position);
+                    target.z -= (proj.isCombo ? 25 : 10); // 擊退效果
+                    
+                    target.bodyMat.color.setHex(0xffffff);
+                    setTimeout(() => { if (target.group) target.bodyMat.color.setHex(target.originalColor); }, 120);
+                    createExplosion(target.group.position.clone().add(new THREE.Vector3(0,10,5)), 0xffa500, 12);
+
+                    if (target.hp <= 0) {
+                        createExplosion(target.group.position, target.originalColor, 40);
+                        scene.remove(target.group); activeMonsters.splice(activeMonsters.indexOf(target), 1);
+                    }
                 }
             }
         }
 
-        // 粒子系統更新
         for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
-            p.life -= delta;
-            if (p.life <= 0) {
-                scene.remove(p.mesh);
-                particles.splice(i, 1);
-            } else {
+            const p = particles[i]; p.life -= delta;
+            if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); } 
+            else {
                 p.mesh.position.addScaledVector(p.velocity, delta);
-                p.velocity.y -= 100 * delta; // 重力
-                
-                if(p.mesh.position.y < 0) {
-                    p.mesh.position.y = 0;
-                    p.velocity.y *= -0.5;
-                }
+                p.velocity.y -= 100 * delta; 
+                if(p.mesh.position.y < 0) { p.mesh.position.y = 0; p.velocity.y *= -0.5; }
                 p.mesh.scale.setScalar(p.life);
             }
         }
-
         renderer.render(scene, camera);
     }
 
     function startGame() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         isPlaying = true;
-        score = 0;
-        combo = 0;
-        ultimateCharge = 0;
-        updateUltimateUI(); // 初始化集氣環
+        score = 0; combo = 0; ultimateCharge = 0;
+        updateUltimateUI(); scoreEl.innerText = score;
         
-        // 清理殘留的怪獸
-        activeMonsters.forEach(m => scene.remove(m.group));
-        activeMonsters.length = 0;
-        spawnTimer = 0.5; // 開場馬上出一隻
-        baseSpawnInterval = 3.5;
-
-        princessGroup.visible = true;
+        activeMonsters.forEach(m => scene.remove(m.group)); activeMonsters.length = 0;
+        projectiles.forEach(p => scene.remove(p.mesh)); projectiles.length = 0;
         
-        projectiles.forEach(p => scene.remove(p.mesh));
-        projectiles.length = 0;
-
+        spawnTimer = 0.5; princessGroup.visible = true;
+        
         startScreen.classList.add('hidden');
         gameOverScreen.classList.add('hidden');
         uiLayer.classList.remove('hidden');
         
-        // 恢復攝影機視角
-        camera.position.set(0, 18, 40);
-        camera.lookAt(0, 5, -50);
-
-        updateUI();
+        camera.position.set(0, 18, 40); camera.lookAt(0, 5, -50);
         getNextWord();
+        startBGM(); // 啟動背景音樂
     }
 
     function loseGame() {
         isPlaying = false;
+        stopBGM(); // 停止音樂
         playSound('error');
-        
-        // 公主被吃掉 (隱藏)
         princessGroup.visible = false;
         createExplosion(princessGroup.position, 0xff69b4, 30); 
         
-        // 攝影機劇烈晃動
-        const originalPos = camera.position.clone();
-        let shakeCount = 0;
-        const shakeInterval = setInterval(() => {
-            camera.position.set(
-                originalPos.x + (Math.random()-0.5)*3,
-                originalPos.y + (Math.random()-0.5)*3,
-                originalPos.z
-            );
-            shakeCount++;
-            if(shakeCount > 20) {
-                clearInterval(shakeInterval);
-                camera.position.copy(originalPos);
-                
+        const origPos = camera.position.clone(); let shakeCount = 0;
+        const shakeInterv = setInterval(() => {
+            camera.position.set(origPos.x + (Math.random()-0.5)*3, origPos.y + (Math.random()-0.5)*3, origPos.z);
+            if(++shakeCount > 20) {
+                clearInterval(shakeInterv); camera.position.copy(origPos);
                 setTimeout(() => {
                     uiLayer.classList.add('hidden');
                     finalScoreLoseEl.innerText = score;
-                    // 將背景設定微紅色凸顯失敗
-                    gameOverScreen.style.background = 'rgba(239, 68, 68, 0.4)';
                     gameOverScreen.classList.remove('hidden');
                 }, 800);
             }
         }, 30);
     }
 
-    // 移除 winGame 函數，因為現在是無盡模式了
+    // 綁定三個難度按鈕
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            currentDifficulty = e.target.dataset.diff;
+            startGame();
+        });
+    });
 
-    function initAudioAndStart() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        startGame();
-    }
+    document.getElementById('restart-btn-lose').addEventListener('click', startGame);
 
-    document.getElementById('start-btn').addEventListener('click', initAudioAndStart);
-    document.getElementById('restart-btn-lose').addEventListener('click', initAudioAndStart);
-
-    // 啟動動畫循環
     requestAnimationFrame(animate);
-
 </script>
 </body>
 </html>
